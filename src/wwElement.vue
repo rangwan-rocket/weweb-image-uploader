@@ -454,21 +454,24 @@ export default {
         }
 
         newImages.value.splice(newIndex, 1)
-        emit('trigger-event', {
-          name: 'image-removed',
-          event: { url: url, isExisting: false },
-        })
       } else {
         const existingIndex = existingImages.value.indexOf(url)
         if (existingIndex > -1) {
           removedUrls.value.push(url)
           existingImages.value.splice(existingIndex, 1)
-          emit('trigger-event', {
-            name: 'image-removed',
-            event: { url: url, isExisting: true },
-          })
         }
       }
+
+      // Emit image-removed with current state (same format as images-changed)
+      const currentUrls = [...existingImages.value, ...newImages.value]
+      const eventValue = maxFilesValue.value === 1
+        ? (currentUrls[currentUrls.length - 1] || '')
+        : currentUrls
+
+      emit('trigger-event', {
+        name: 'image-removed',
+        event: { value: eventValue },
+      })
 
       updateVariables()
     }

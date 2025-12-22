@@ -306,7 +306,7 @@ export default {
     {
       name: 'image-removed',
       label: { en: 'On Image Removed' },
-      event: { url: '', isExisting: false },
+      event: { value: '' },
     },
     {
       name: 'validation-error',
