@@ -204,24 +204,27 @@ export default {
       defaultValue: [],
     })
 
-    const updateVariables = () => {
+    const updateVariables = (emitEvent = true) => {
       const currentUrls = [...existingImages.value, ...newImages.value]
       setImageUrlsVar(currentUrls)
       setRemovedUrlsVar([...removedUrls.value])
       setNewUrlsVar([...newImages.value])
 
-      // If maxFiles is 1, return single string (last URL or empty string)
-      // Otherwise return array of URLs
-      const eventValue = maxFilesValue.value === 1
-        ? (currentUrls[currentUrls.length - 1] || '')
-        : currentUrls
+      // Only emit event when triggered by user action, not external data changes
+      if (emitEvent) {
+        // If maxFiles is 1, return single string (last URL or empty string)
+        // Otherwise return array of URLs
+        const eventValue = maxFilesValue.value === 1
+          ? (currentUrls[currentUrls.length - 1] || '')
+          : currentUrls
 
-      emit('trigger-event', {
-        name: 'images-changed',
-        event: {
-          value: eventValue,
-        },
-      })
+        emit('trigger-event', {
+          name: 'images-changed',
+          event: {
+            value: eventValue,
+          },
+        })
+      }
     }
 
     watch(
@@ -232,7 +235,8 @@ export default {
         } else {
           existingImages.value = []
         }
-        updateVariables()
+        // Don't emit event when initialImages changes externally - prevents infinite loops
+        updateVariables(false)
       },
       { immediate: true, deep: true }
     )
