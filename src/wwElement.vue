@@ -298,8 +298,11 @@ export default {
       const bucketName = props.content?.bucketName || 'images'
       const storagePath = props.content?.storagePath || 'uploads'
       const timestamp = Date.now()
+      const random = Math.random().toString(36).substring(2, 8)  // 6 char random string
       const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      const path = storagePath ? storagePath + '/' + timestamp + '_' + safeName : timestamp + '_' + safeName
+      const path = storagePath 
+        ? storagePath + '/' + timestamp + '_' + random + '_' + safeName 
+        : timestamp + '_' + random + '_' + safeName
 
       const { error } = await supabase.storage.from(bucketName).upload(path, file, {
         cacheControl: '3600',
@@ -370,9 +373,34 @@ export default {
     const extractPathFromUrl = (url, bucketName) => {
       try {
         const urlObj = new URL(url)
-        const pathParts = urlObj.pathname.split('/storage/v1/object/public/' + bucketName + '/')
-        return pathParts[1] || null
+        // Try multiple URL patterns
+        // Pattern 1: /storage/v1/object/public/bucket/path
+        let pathParts = urlObj.pathname.split('/storage/v1/object/public/' + bucketName + '/')
+        if (pathParts[1]) {
+          console.log('Extracted path (pattern 1):', pathParts[1])
+          return pathParts[1]
+        }
+        
+        // Pattern 2: /storage/v1/object/sign/bucket/path (signed URLs)
+        pathParts = urlObj.pathname.split('/storage/v1/object/sign/' + bucketName + '/')
+        if (pathParts[1]) {
+          console.log('Extracted path (pattern 2):', pathParts[1].split('?')[0])
+          return pathParts[1].split('?')[0]
+        }
+        
+        // Pattern 3: Just bucket/path at the end
+        const fullPath = urlObj.pathname
+        const bucketIndex = fullPath.indexOf('/' + bucketName + '/')
+        if (bucketIndex > -1) {
+          const path = fullPath.substring(bucketIndex + bucketName.length + 2)
+          console.log('Extracted path (pattern 3):', path)
+          return path
+        }
+        
+        console.warn('Could not extract path from URL:', url)
+        return null
       } catch (e) {
+        console.warn('Error extracting path from URL:', e)
         return null
       }
     }
@@ -384,20 +412,36 @@ export default {
         // Check if it's a blob URL (editor mode preview)
         if (url.startsWith('blob:')) {
           URL.revokeObjectURL(url)
+          console.log('Revoked blob URL')
         } else {
           // Try to delete from Supabase storage
           const supabase = getSupabaseClient()
           const bucketName = props.content?.bucketName || 'images'
           
+          console.log('Attempting to delete from Supabase:', { url, bucketName, hasSupabase: !!supabase })
+          
           if (supabase) {
             const path = extractPathFromUrl(url, bucketName)
+            console.log('Extracted path for deletion:', path)
+            
             if (path) {
               try {
-                await supabase.storage.from(bucketName).remove([path])
+                const { data, error } = await supabase.storage.from(bucketName).remove([path])
+                if (error) {
+                  console.error('Supabase delete error:', error)
+                  errorMessage.value = 'Failed to delete: ' + error.message
+                } else {
+                  console.log('Successfully deleted from Supabase:', data)
+                }
               } catch (e) {
-                console.warn('Failed to delete file from storage:', e)
+                console.error('Failed to delete file from storage:', e)
+                errorMessage.value = 'Failed to delete: ' + (e.message || 'Unknown error')
               }
+            } else {
+              console.warn('Could not extract path from URL for deletion')
             }
+          } else {
+            console.warn('Supabase client not available for deletion')
           }
         }
 
