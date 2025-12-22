@@ -220,9 +220,7 @@ export default {
 
         emit('trigger-event', {
           name: 'images-changed',
-          event: {
-            value: eventValue,
-          },
+          event: eventValue,
         })
       }
     }
@@ -363,7 +361,7 @@ export default {
 
           emit('trigger-event', {
             name: 'upload-success',
-            event: { value: url },
+            event: url,
           })
         } catch (error) {
           const errorMsg = error?.message || 'Upload failed'
@@ -470,7 +468,7 @@ export default {
 
       emit('trigger-event', {
         name: 'image-removed',
-        event: { value: eventValue },
+        event: eventValue,
       })
 
       updateVariables()

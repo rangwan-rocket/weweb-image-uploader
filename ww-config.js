@@ -293,7 +293,7 @@ export default {
     {
       name: 'upload-success',
       label: { en: 'On Upload Success' },
-      event: { value: '' },
+      event: '',
       /* wwEditor:start */
       default: true,
       /* wwEditor:end */
@@ -306,7 +306,7 @@ export default {
     {
       name: 'image-removed',
       label: { en: 'On Image Removed' },
-      event: { value: '' },
+      event: '',
     },
     {
       name: 'validation-error',
@@ -316,7 +316,7 @@ export default {
     {
       name: 'images-changed',
       label: { en: 'On Images Changed' },
-      event: { value: [] },
+      event: [],
     },
   ],
 }
