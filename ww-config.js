@@ -59,7 +59,7 @@ export default {
       type: 'Array',
       section: 'settings',
       bindable: true,
-      defaultValue: ['jpg', 'jpeg', 'png', 'webp'],
+      defaultValue: ['jpg', 'jpeg', 'png', 'webp', 'svg'],
       options: {
         expandable: true,
         getItemLabel(item) {
