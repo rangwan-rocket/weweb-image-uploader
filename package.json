@@ -1,0 +1,14 @@
+{
+  "name": "file-upload",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "weweb build",
+    "serve": "weweb serve"
+  },
+  "dependencies": {
+    "polaris-weweb-styles": "^1.0.2"
+  },
+  "devDependencies": {
+    "@weweb/cli": "latest"
+  }
+}
