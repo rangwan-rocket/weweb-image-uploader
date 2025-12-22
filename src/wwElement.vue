@@ -126,22 +126,33 @@ export default {
     const newImages = ref([])
     const removedUrls = ref([])
 
-    /* wwEditor:start */
-    const isEditorMode = computed(() => !!props.wwEditorState?.isEditing)
-    /* wwEditor:end */
-
     const getSupabaseClient = () => {
       try {
-        if (wwLib?.wwPlugins?.supabase?.client) {
-          return wwLib.wwPlugins.supabase.client
+        // Try multiple paths to find Supabase client
+        // Path 1: wwLib.wwPlugins.supabase
+        const supabasePlugin = wwLib?.wwPlugins?.supabase
+        if (supabasePlugin) {
+          // The client could be at different paths depending on plugin version
+          if (supabasePlugin.client) return supabasePlugin.client
+          if (supabasePlugin.instance) return supabasePlugin.instance
+          if (supabasePlugin.supabase) return supabasePlugin.supabase
+          // If plugin exists but client not found, log available keys for debugging
+          console.log('Supabase plugin found, available keys:', Object.keys(supabasePlugin))
         }
-        if (typeof window !== 'undefined' && window.weweb?.getPluginById) {
-          const plugin = window.weweb.getPluginById('supabase')
-          return plugin?.client
+        
+        // Path 2: Direct wwLib access
+        if (wwLib?.supabase) return wwLib.supabase
+        
+        // Path 3: Window-based access
+        if (typeof window !== 'undefined') {
+          if (window.supabase) return window.supabase
+          if (window.weweb?.plugins?.supabase?.client) return window.weweb.plugins.supabase.client
         }
+        
+        console.warn('Supabase client not found. Available wwLib.wwPlugins:', wwLib?.wwPlugins ? Object.keys(wwLib.wwPlugins) : 'none')
         return null
       } catch (e) {
-        console.warn('Supabase client not available:', e)
+        console.warn('Error getting Supabase client:', e)
         return null
       }
     }
@@ -270,15 +281,18 @@ export default {
     const uploadFile = async (file) => {
       const supabase = getSupabaseClient()
       
-      /* wwEditor:start */
-      // In editor mode, create a local preview URL instead of uploading
       if (!supabase) {
-        return URL.createObjectURL(file)
-      }
-      /* wwEditor:end */
-
-      if (!supabase) {
-        throw new Error('Supabase client not available. Please ensure the Supabase plugin is configured.')
+        // Check if we're in local dev mode (serving from localhost)
+        const isLocalDev = typeof window !== 'undefined' && 
+          window.location?.hostname === 'localhost'
+        
+        if (isLocalDev) {
+          // Only use blob URLs in local development
+          console.log('Using local preview (no Supabase in dev mode)')
+          return URL.createObjectURL(file)
+        }
+        
+        throw new Error('Supabase client not available. Please ensure the Supabase plugin is configured and you are logged in.')
       }
 
       const bucketName = props.content?.bucketName || 'images'
