@@ -210,10 +210,16 @@ export default {
       setRemovedUrlsVar([...removedUrls.value])
       setNewUrlsVar([...newImages.value])
 
+      // If maxFiles is 1, return single string (last URL or empty string)
+      // Otherwise return array of URLs
+      const eventValue = maxFilesValue.value === 1
+        ? (currentUrls[currentUrls.length - 1] || '')
+        : currentUrls
+
       emit('trigger-event', {
         name: 'images-changed',
         event: {
-          value: currentUrls,
+          value: eventValue,
         },
       })
     }
