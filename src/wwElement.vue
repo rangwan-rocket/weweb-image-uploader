@@ -213,9 +213,7 @@ export default {
       emit('trigger-event', {
         name: 'images-changed',
         event: {
-          imageUrls: currentUrls,
-          removedUrls: [...removedUrls.value],
-          newUrls: [...newImages.value],
+          value: currentUrls,
         },
       })
     }
@@ -355,7 +353,7 @@ export default {
 
           emit('trigger-event', {
             name: 'upload-success',
-            event: { url: url, file: file },
+            event: { value: url },
           })
         } catch (error) {
           const errorMsg = error?.message || 'Upload failed'

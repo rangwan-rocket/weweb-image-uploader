@@ -293,7 +293,7 @@ export default {
     {
       name: 'upload-success',
       label: { en: 'On Upload Success' },
-      event: { url: '', file: null },
+      event: { value: '' },
       /* wwEditor:start */
       default: true,
       /* wwEditor:end */
@@ -316,7 +316,7 @@ export default {
     {
       name: 'images-changed',
       label: { en: 'On Images Changed' },
-      event: { imageUrls: [], removedUrls: [], newUrls: [] },
+      event: { value: [] },
     },
   ],
 }
