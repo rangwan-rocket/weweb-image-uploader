@@ -228,11 +228,15 @@ export default {
     watch(
       () => props.content?.initialImages,
       (newValue) => {
-        if (Array.isArray(newValue)) {
-          existingImages.value = [...newValue]
-        } else {
-          existingImages.value = []
-        }
+        const newInitialImages = Array.isArray(newValue) ? [...newValue] : []
+        existingImages.value = newInitialImages
+        
+        // Remove from newImages any URLs that are now in initialImages
+        // (they've been "saved" to the external source)
+        newImages.value = newImages.value.filter(
+          url => !newInitialImages.includes(url)
+        )
+        
         // Don't emit event when initialImages changes externally - prevents infinite loops
         updateVariables(false)
       },
